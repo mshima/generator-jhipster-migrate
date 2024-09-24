@@ -17,11 +17,12 @@ const blueprint = packageFolderName.startsWith('jhipster-') ? `generator-${packa
   runJHipster({
     executableName,
     executableVersion: version,
-    defaultCommand: 'app',
+    defaultCommand: 'migrate',
     devBlueprintPath,
     blueprints: {
       [blueprint]: version,
     },
+    commands: require('./commands.cjs'),
     printBlueprintLogo: () => {
       console.log('===================== JHipster migrate =====================');
       console.log('');
