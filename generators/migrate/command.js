@@ -7,6 +7,13 @@ import { asCommand } from 'generator-jhipster';
 export default asCommand({
   options: {},
   configs: {
+    fromV7: {
+      description: `Migrate the application from JHipster ${chalk.yellow('v7')} to JHipster ${chalk.yellow('v8')}`,
+      cli: {
+        type: Boolean,
+      },
+      scope: 'generator',
+    },
     sourceCli: {
       description: `Executable to use to generate the ${chalk.yellow('source')} application`,
       cli: {

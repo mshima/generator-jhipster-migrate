@@ -45,6 +45,8 @@ import { normalizeBlueprintName } from './internal/blueprints.js';
 export default class extends BaseGenerator {
   /** @type {boolean} */
   verbose;
+  /** @type {boolean} */
+  fromV7;
 
   constructor(args, options, features) {
     super(args, options, { jhipsterBootstrap: false, customCommitTask: true, customInstallTask: true, ...features });
@@ -324,6 +326,7 @@ export default class extends BaseGenerator {
 
         // Regenerate the project
         await this.regenerate({
+          useV7: this.fromV7,
           cli: sourceCli,
           jhipsterVersion: sourceVersion,
           blueprints: regenerateBlueprints,
@@ -501,17 +504,18 @@ export default class extends BaseGenerator {
     this.log.ok('cleaned up project directory');
   }
 
-  async regenerate({ cli, jhipsterVersion, blueprints, type, cliOptions }) {
+  async regenerate({ cli, jhipsterVersion, useV7, blueprints, type, cliOptions }) {
     const regenerateMessage = `regenerating ${chalk.yellow(type)} application using JHipster ${jhipsterVersion}`;
     const spinner = this.verbose ? undefined : ora(regenerateMessage);
     const packageJsonJHipsterVersion = this.getPackageJsonVersion();
+    useV7 ??= this.isV7(packageJsonJHipsterVersion);
     let requiresManualNode16;
     if (this.verbose) {
       this.log.info(regenerateMessage);
     }
 
     cliOptions = [...cliOptions, ...DEFAULT_CLI_OPTIONS.split(' ')];
-    if (this.isV7(jhipsterVersion)) {
+    if (useV7) {
       cliOptions = [...cliOptions, ...DEFAULT_CLI_OPTIONS_V7.split(' ')];
     }
 
@@ -524,7 +528,7 @@ export default class extends BaseGenerator {
 
     try {
       if (jhipsterVersion === 'current' && packageJsonJHipsterVersion) {
-        if (this.isV7(packageJsonJHipsterVersion)) {
+        if (useV7) {
           cliOptions = [...cliOptions, ...DEFAULT_CLI_OPTIONS_V7.split(' ')];
           const { path: nodePath } = await getNode(V7_NODE);
           spawnCommandOptions = { ...spawnCommandOptions, execPath: nodePath, preferLocal: true };
@@ -558,7 +562,7 @@ export default class extends BaseGenerator {
       } else if (jhipsterVersion !== 'none') {
         if (jhipsterVersion === 'current') {
           jhipsterVersion = this.getCurrentSourceVersion();
-          if (this.isV7(jhipsterVersion)) {
+          if (useV7) {
             cliOptions = [...cliOptions, ...DEFAULT_CLI_OPTIONS_V7.split(' ')];
             const { path: nodePath } = await getNode(V7_NODE);
             spawnCommandOptions = { ...spawnCommandOptions, execPath: nodePath, preferLocal: true };
